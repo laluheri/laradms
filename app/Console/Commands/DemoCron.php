@@ -48,7 +48,7 @@ class DemoCron extends Command
                     'timestamp' => $attendance->checktime,
                 ];
                 
-                DB::table('attendances')->insert($employee_attendance);
+                DB::connection('mysql_remote')->table('attendances')->insert($employee_attendance);
             }
     
             getTimestamp();
@@ -63,7 +63,7 @@ class DemoCron extends Command
 
     function getTimestamp(){
 
-        $attendances = DB::table('attendances_12')->get();
+        $attendances = DB::connection('mysql_remote')->table('attendances_12')->get();
         
         foreach($attendances as $attendance){       
             $checkIn        = strtotime(convertTime($attendance->check_in_att))-strtotime('TODAY');
@@ -112,7 +112,7 @@ class DemoCron extends Command
            
             $total          = floatval(number_format(($jamKerja/7.5)*100, 3));
            
-            DB::table('employee_att')->insert([
+            DB::connection('mysql_remote')->table('employee_att')->insert([
                 'check_in_att' => $attendance->id_in,
                 'check_out_att' => $attendance->id_out,
                 'employee_id' => $attendance->employee_id,
