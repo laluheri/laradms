@@ -33,37 +33,39 @@ class DemoCron extends Command
     }
     public function handle()
     {
+        $this->getTimestamp();
+        // try {
 
-        try {
-
-            $attendances= DB::connection('local_db')->table('attendance_view')->get();
+        //     $attendances= DB::connection('local_db')->table('attendance_view')->get();
     
-            foreach($attendances as $attendance) {
+        //     foreach($attendances as $attendance) {
     
-                $employe_id = ltrim($attendance->employee_id, '0');
+        //         $employe_id = ltrim($attendance->employee_id, '0');
     
-                $employee_attendance = [
-                    'device_id' => null,
-                    'employee_id' => $employe_id,
-                    'timestamp' => $attendance->checktime,
-                ];
+        //         $employee_attendance = [
+        //             'device_id' => null,
+        //             'employee_id' => $employe_id,
+        //             'timestamp' => $attendance->checktime,
+        //         ];
                 
-                DB::connection('mysql_remote')->table('attendances')->insert($employee_attendance);
-            }
+        //         DB::connection('mysql_remote')->table('attendances')->insert($employee_attendance);
+        //     }
     
-            getTimestamp();
+        //     getTimestamp();
     
-            return 'Database connection is successful!';
+        //     return 'Database connection is successful!';
             
-        } catch (\Exception $e) {
-            return 'Unable to connect to the database: ' . $e->getMessage();
-        }
+        // } catch (\Exception $e) {
+        //     return 'Unable to connect to the database: ' . $e->getMessage();
+        // }
         
     }
 
-    function getTimestamp(){
-
-        $attendances = DB::connection('mysql_remote')->table('attendances_12')->get();
+    public function getTimestamp(){
+        
+        
+        
+        $attendances = DB::connection('mysql_remote')->table('attendances_13')->get();
         
         foreach($attendances as $attendance){       
             $checkIn        = strtotime(convertTime($attendance->check_in_att))-strtotime('TODAY');

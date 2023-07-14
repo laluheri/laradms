@@ -27,15 +27,14 @@ function convertTime($dateString){
 }
 
 Route::get('/', function () {
-    
-    $akhir  = new DateTime('2017-09-06 09:30:00');
+    $awal  = new DateTime('16:00:00');
+    $akhir  = new DateTime('16:30:00');
     $diff  = $awal->diff($akhir);
-    dd($diff->format('%H:%I:%S'));
     // $attendances = DB::connection('mysql_remote')->table('attendances_12')->get();
     // foreach($attendances as $attendance){    
     //     $diff  = $awal->diff($akhir);
     // }
-    // dd($attendances);
+
         $checkIn        = strtotime(convertTime('07:45:23'))-strtotime('TODAY');
         $checkOut       = strtotime(convertTime('16:09:46'))-strtotime('TODAY');
         
@@ -100,19 +99,14 @@ Route::get('/', function () {
        
         $total          = floatval(number_format(($jamKerja/7.5)*100, 3));
 
-        
-        dd("LD= ".$ld,"CP= ".$cp," Jam Kurang = ".$jamKurang,"Jam Kerja = ".$jamKerja, " Total = " .$total);
-
-
-
-        // dd($batas_awal,$batas_akhir);
+    
     // $attendances    = DB::connection('local_db')->table('attendance_view')->get();
     // $currentTime    = $attendances[1]->checktime;
     
     // $out            = strtotime(convertTime($currentTime))-strtotime('TODAY');
     // $in             = strtotime("07:00:41")-strtotime('TODAY');
     // $hasil          = $out-$in-3600;
-    // dd($hasil);
+
     // $jamKerja = floatval(number_format($hasil/3600, 3));
     // if($jamKerja > 7.5){
     //     $jamKerja = 7.5;
@@ -122,8 +116,7 @@ Route::get('/', function () {
     //     $jamKurang = 0;
     // }
     // $total = floatval(number_format(($jamKerja/7.5)*100, 3));
-    
-    // dd($total);
+
 
     
 });
@@ -138,7 +131,6 @@ Route::get('/attendance', [AdmsController::class, 'index']);
 Route::get('/check-connection', function () { 
    
     try {
-
         $attendances= DB::connection('local_db')->table('attendance_view')->get();
 
         foreach($attendances as $attendance) {
@@ -165,7 +157,7 @@ Route::get('/check-connection', function () {
 
  function getTimestamp(){
 
-    $attendances = DB::connection('mysql_remote')->table('attendances_view')->get();
+    $attendances = DB::connection('mysql_remote')->table('attendances_13')->get();
     
     foreach($attendances as $attendance){    
         $checkIn        = strtotime(convertTime($attendance->check_in_att))-strtotime('TODAY');
@@ -189,12 +181,14 @@ Route::get('/check-connection', function () {
         $cp=0;
         $timeLdSend = '';
         $timeCpSend = '';
+        $status='';
         if ($checkIn>$batas_awal) {
             $ld=number_format(($checkIn-$batas_awal)/3600,3);
             $awal  = new DateTime('08:00:00');
             $akhir = new DateTime($attendance->check_in_att);
             $diff  = $awal->diff(new DateTime($akhir->format('h:i:s')));
             $timeLdSend = $diff->format('%H:%I:%S');
+            $status='LD';
         }
 
         //Cepet Pulang
@@ -208,9 +202,10 @@ Route::get('/check-connection', function () {
             if($checkIn != $checkOut) {
                 $akhir  = new DateTime(($hari->format('w') == '5' ? '16:30:00' : '16:00:00'));
                 $awalTemp = new DateTime($attendance->check_out_att);
-                $awal = new DateTime($awalTemp->format('h:i:s'));
-                $diff  = $awal->diff($akhir);
+                $diff  = $akhir->diff($awalTemp);
                 $timeCpSend = $diff->format('%H:%I:%S');
+                $status='CP';
+               
             }
            
         }
@@ -222,6 +217,10 @@ Route::get('/check-connection', function () {
         
         if ($ld || $cp) {
             $jamKurang= $ld+$cp;
+        }
+        
+        if($ld && $cp){
+            $status='LD,CP';
         }
             
         if($jamKerja > 7.5){
@@ -237,7 +236,18 @@ Route::get('/check-connection', function () {
         
        
         $total          = floatval(number_format(($jamKerja/7.5)*100, 3));
-       
+        
+        if($attendance->check_in_att == $attendance->check_out_att) {
+            $jamKerja = 0;
+            $jamKurang = 0;
+            $total = 0;
+            $timeCpSend = '';
+            $timeLdSend = '';
+            $status = '';
+            $cp = 0;
+            $ld = 0;
+        }
+        
         DB::connection('mysql_remote')->table('employee_att')->insert([
             'check_in_att' => $attendance->id_in,
             'check_out_att' => $attendance->id_out,
@@ -249,6 +259,7 @@ Route::get('/check-connection', function () {
             'time_ld'=>$timeLdSend,
             'time_cp'=>$timeCpSend,
             'total' => $total,
+            'status'=>$status,
             'date' => date('Y-m-d',strtotime($attendance->check_in_att)),
         ]);
         

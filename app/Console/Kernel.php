@@ -16,8 +16,10 @@ class Kernel extends ConsoleKernel
 
     protected function schedule(Schedule $schedule): void
     {
+        // $schedule->call('App\Http\Controllers\AdmsController@index')->dailyAt('06:27');
+        $schedule->call('App\Http\Controllers\AdmsController@index')->everyMinute();
         // $schedule->command('daily:insert')->everyMinute();
-        $schedule->command('daily:insert')->dailyAt("20:34");
+        // $schedule->command('daily:insert')->dailyAt('15:25');
     }
 
     /**
