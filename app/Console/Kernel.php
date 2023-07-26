@@ -16,8 +16,8 @@ class Kernel extends ConsoleKernel
 
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->call('App\Http\Controllers\AdmsController@index')->dailyAt('12:30');
-        $schedule->call('App\Http\Controllers\AdmsController@insertEmpAtt')->dailyAt('15:24');
+        $schedule->call('App\Http\Controllers\AdmsController@insertToAttendance')->everyMinute();
+        // $schedule->call('App\Http\Controllers\AdmsController@insertEmpAtt')->dailyAt('15:24');
         // $schedule->call('App\Http\Controllers\AdmsController@index')->dailyAt('10:58')->onFailure(function (\Throwable $e) {
         // $schedule->call('App\Http\Controllers\AdmsController@insertEmpAtt')->dailyAt('11:07')->onFailure(function (\Throwable $e) {
             // Catat log error di sini menggunakan Log::error atau metode lainnya

@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use DateTime;
 use DateInterval;
-
+// plink -ssh bkdpsdm@simpelgati.lombokutarakab.go.id -pw admin212 -P 2212 -N -L 3307:127.0.0.1:3306
 class AdmController extends Controller {
 
     public function index(){
@@ -52,7 +52,7 @@ class AdmController extends Controller {
 
     function getTimestamp(){
 
-       $attendances = DB::connection('mysql_remote')->table('attendaces_21')->get();
+       $attendances = DB::connection('mysql_remote')->table('attendaces_12')->get();
        foreach ($attendances as $attendance) {
         
         $checkIn = strtotime(convertTime($attendance->check_in_att)) - strtotime('TODAY');
@@ -90,7 +90,6 @@ class AdmController extends Controller {
             $menitAkhir = new DateTime('07:30:00');
             $diff = $menitAkhir->diff($menitAwal);
             $menitTambahAkhir = $diff->format('PT%IM%SS');
-            // $telatKurangDari8 = $diff->format('%H:%I:%S');
         }
        
 
@@ -127,13 +126,26 @@ class AdmController extends Controller {
 
 
         // dd('timeLdSend: '.$timeLdSend,'LD: '.$ld,'timeCpSend:'.$timeCpSend,'CP: '.$cp,'status : '.$status,'Jam Kerja :'.$jamKerja,'Jam Kurang :'.$jamKurang,'Total :'.$total,'menitTambahAkhir: '.$menitTambahAkhir,'tambahMenitKeCheckday: '.$tambahMenitKeCheckday,);
-        
+        $TrueCheckIn = strtotime(convertTime($attendance->check_in_att)) - strtotime('TODAY');
         $batas=strtotime(convertTime('12:00:01')) - strtotime('TODAY');
         
+        // dd($TrueCheckIn,$batas);
         $id_in=null;
         $id_out=null;
 
-        if (($checkIn <= $batas) && ($checkOut <= $batas)) {
+        if($TrueCheckIn > $batas){
+            $id_out = $attendance->id_out;
+            $id_in = null;
+
+            $jamKerja = 6.0;
+            $jamKurang = 1.5;
+            $total = 0;
+            $timeCpSend = '';
+            $timeLdSend = '';
+            $status = 'TAD';
+            $cp = 0;
+            $ld = 0;
+        }else if (($TrueCheckIn <= $batas) && ($checkOut <= $batas)) {
             $id_in = $attendance->id_in;
             $id_out = null;
 
@@ -146,18 +158,6 @@ class AdmController extends Controller {
             $cp = 0;
             $ld = 0;
 
-        }else if($checkIn > $batas){
-            $id_out = $attendance->id_out;
-            $id_in = null;
-
-            $jamKerja = 6.0;
-            $jamKurang = 1.5;
-            $total = 0;
-            $timeCpSend = '';
-            $timeLdSend = '';
-            $status = 'TAD';
-            $cp = 0;
-            $ld = 0;
         }else{
             $id_in = $attendance->id_in;
             $id_out = $attendance->id_out;
